@@ -7,9 +7,14 @@ var passed_appcount = myArgs[1];
 console.log(passed_appid);
 var read = Promise.denodeify(fs.readFile);
 var write = Promise.denodeify(fs.writeFile);
+var dir = './dataset/' + passed_appcount;
+if (!fs.existsSync(dir)){
+    fs.mkdirSync(dir);
+}
 
 gplay.app({appId: passed_appid})
   .then(function (str) {
-    return write(passed_appcount + '.json', JSON.stringify(str, null, '  '), 'utf8')
+    
+    return write(dir + '/meta.json', JSON.stringify(str, null, '  '), 'utf8')
   })
 .then(function (){process.exit()});
