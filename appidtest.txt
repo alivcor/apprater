@@ -1,0 +1,2 @@
+com.sixtostart.zombiesrunclient
+jp.co.buffalo.WebAccess
