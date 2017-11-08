@@ -1,0 +1,21 @@
+{
+    "name": "iresium/playscraper",
+    "description": "This is a very cool package!",
+    "version": "0.3.0",
+    "type": "library",
+    "keywords": ["composer", "php", "playstore"],
+    "homepage": "https://alivcor.github.io",
+    "time": "2017-11-07",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Abhinandan Dubey",
+            "email": "abhinandandubey@live.com",
+            "homepage": "http://alivcor.github.io",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "raulr/google-play-scraper": "*"
+    }
+}
