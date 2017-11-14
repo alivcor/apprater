@@ -38,8 +38,6 @@ def VGG_16(weights_path=None):
     model.add(Convolution2D(512, 3, 3, activation='relu'))
     model.add(ZeroPadding2D((1,1)))
     model.add(Convolution2D(512, 3, 3, activation='relu'))
-    model.add(ZeroPadding2D((1,1)))
-    model.add(Convolution2D(512, 3, 3, activation='relu'))
     model.add(MaxPooling2D((2,2), strides=(2,2)))
 
     model.add(Flatten())
