@@ -42,7 +42,7 @@ def vgg_sieve(model, input_tensors, logfilename):
     return np.array(feature_vectors)
 
 
-def extract_features(filename, feature_extraction_model, logfilename, stride=100):
+def extract_features(filename, feature_extraction_model, logfilename, stride=100, max_frames=150):
     cap = cv2.VideoCapture(filename)
     # # Read the first frame of the video
     video_frameSequence = []
@@ -55,11 +55,11 @@ def extract_features(filename, feature_extraction_model, logfilename, stride=100
         while True:
             try:
                 frame_count += 1
-                if (frame_count % stride == 0):
+                if (frame_count % stride == 0 and frame_count <= max_frames):
                     ret, frame = cap.read()
                     # print frame.shape
                     video_frameSequence.append(frame)
-                    progress.update(frame_count)
+                progress.update(frame_count)
             except AttributeError:
                 break
             except ValueError:

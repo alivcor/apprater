@@ -4,7 +4,10 @@ import FeatureExtractor, EventIssuer
 import progressbar
 from keras.layers import Flatten, Dense, Input
 from keras.models import Sequential
+import glob, os, pickle
 from keras.layers import Convolution2D, MaxPooling2D
+
+
 _LOGFILENAME = ""
 reload(sys)
 
@@ -20,6 +23,22 @@ def start_iresium_core():
     return _LOGFILENAME, timestamp
 
 
+
+def save_obj(obj, name, logfilename):
+    EventIssuer.issueSharpAlert("Saving data ..", logfilename, True)
+    with open('obj/'+ name + '.pkl', 'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+    EventIssuer.issueSuccess("Saved Object ..", logfilename, True)
+
+
+def load_obj(name, logfilename):
+    EventIssuer.issueSharpAlert("Loading data ..", logfilename, True)
+    with open('obj/' + name + '.pkl', 'rb') as f:
+        obj = pickle.load(f)
+        EventIssuer.issueSuccess("Loaded Object ..", logfilename, True)
+        return obj
+
+
 def compileMainModel():
     apprater_model = Sequential()
     apprater_model.add(Dense(12, activation='relu', name='rating'))
@@ -30,16 +49,27 @@ def compileMainModel():
     apprater_model.summary()
 
 
-def process_videos(logfilename):
-    filename = 'dataset/dataset_100/1/Modern Combat 5 - Game Trailer-_jSPJWqQM90.mp4'
+def process_videos(dir_path, logfilename):
     feature_extraction_model = FeatureExtractor.init_load_extractor_model(_LOGFILENAME)
-    vgg_features = FeatureExtractor.extract_features(filename, feature_extraction_model, _LOGFILENAME, stride=50)
-
-    # for i in range(1, 101):
+    features_dict = {}
+    for i in range(1, 101):
+        dir_name = dir_path + str(i) + "/"
+        files = glob.glob(os.path.join(dir_name, '*.mp4'))
+        EventIssuer.issueMessage("Processing " + str(i) + " of " + str(100), logfilename)
+        if(files):
+            EventIssuer.issueSuccess("Video files found - extracting features.", logfilename)
+            filename = files[0]
+            vgg_features = FeatureExtractor.extract_features(filename, feature_extraction_model, _LOGFILENAME, stride=10, max_frames=500)
+            features_dict[i] = vgg_features
+        else:
+            EventIssuer.issueWarning("No videos found, setting FV to 0", logfilename)
+            features_dict[i] = 0
+        save_obj(features_dict, "feature_vectors", logfilename)
+        EventIssuer.issueSuccess("Processed " + str(i) + " of " + str(100), logfilename, True)
 
 
 start_iresium_core()
-
+process_videos("dataset/dataset_100/", _LOGFILENAME)
 
 
 
