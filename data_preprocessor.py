@@ -2,6 +2,7 @@ import json
 import Constants
 import os
 from pprint import pprint
+import description_rater as dr
 
 path = os.getcwd()
 Train_data_path= os.path.join(path+'/'+'dataset_100'+'/'+Constants.training_data)
@@ -15,6 +16,7 @@ f.write('offersIAP'+',')
 f.write('adSupported'+',')
 f.write('androidVersion'+',')
 f.write('contentRating'+',')
+f.write('textScore'+',')
 f.write('hasVideo'+',')
 f.write('score')
 f.write('\n')
@@ -77,13 +79,16 @@ while count < Constants.Max_Number_Of_Apps:
 		contentRating = 1
 
 
+
 	if(os.path.isfile(Video_file)):
 
 		hasVideo=1
 	else:
-		print Video_file
+		#print Video_file
 		hasVideo=0
 	description = data["description"]
+	print description
+	description_score = dr.rate_description(description)
 	score = data["score"]
 
 	f.write(str(count)+',')
@@ -94,6 +99,7 @@ while count < Constants.Max_Number_Of_Apps:
 	f.write(str(adSupported)+',')
 	f.write(str(androidVersion)+',')
 	f.write(str(contentRating)+',')
+	f.write(str(description_score)+',')
 	f.write(str(hasVideo)+',')
 	f.write(str(score))
 	f.write('\n')
