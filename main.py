@@ -8,24 +8,24 @@ import glob, os, pickle
 from keras.layers import Convolution2D, MaxPooling2D
 from numpy import genfromtxt
 from keras import metrics
-from keras.constraints import max_norm
+from keras.constraints import min_max_norm
 import random
 
 
 def compileMainModel():
     apprater_model = Sequential()
-    apprater_model.add(Dense(9, input_dim=9, kernel_initializer='normal', activation='relu'))
+    apprater_model.add(Dense(9, input_dim=9, kernel_initializer='random_uniform', activation='relu'))
     apprater_model.add(Dense(9, activation="sigmoid"))
-    apprater_model.add(Dense(1, kernel_initializer='normal', kernel_constraint=max_norm(5.)))
+    apprater_model.add(Dense(1, kernel_initializer='normal', kernel_constraint=min_max_norm(min_value=0.0, max_value=5.0)))
     apprater_model.compile(loss='mean_squared_error', optimizer='adam')
     apprater_model.summary()
     return apprater_model
 
 def compileGraphicsModel():
     graphics_model = Sequential()
-    graphics_model.add(Dense(9, input_shape=(51,4096), kernel_initializer='normal', activation='relu'))
+    graphics_model.add(Dense(9, input_shape=(51,4096), kernel_initializer='random_uniform', bias_initializer='zeros', activation='relu'))
     graphics_model.add(Flatten())
-    graphics_model.add(Dense(1, kernel_initializer='normal', kernel_constraint=max_norm(5.)))
+    graphics_model.add(Dense(1, kernel_initializer='normal', kernel_constraint=min_max_norm(min_value=0.0, max_value=5.0)))
     graphics_model.compile(loss='mean_squared_error', optimizer='adam')
     graphics_model.summary()
     return graphics_model
