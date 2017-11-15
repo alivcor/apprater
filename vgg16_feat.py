@@ -150,24 +150,3 @@ def VGG16(include_top=True, weights='imagenet',
                 convert_all_kernels_in_model(model)
     return model
 
-
-if __name__ == '__main__':
-
-    vgg_model = VGG16(include_top=True, weights='imagenet')
-
-    # Add a layer where input is the output of the  second last layer
-    x = Dense(5, activation='softmax', name='rating')(vgg_model.layers[-2].output)
-
-    # Then create the corresponding model
-    app_rater_cnn = Model(input=vgg_model.input, output=x)
-    app_rater_cnn.summary()
-
-    # img_path = 'elephant.jpg'
-    # img = image.load_img(img_path, target_size=(224, 224))
-    # x = image.img_to_array(img)
-    # x = np.expand_dims(x, axis=0)
-    # x = preprocess_input(x)
-    # print('Input image shape:', x.shape)
-    #
-    # preds = model.predict(x)
-    # print(preds)
