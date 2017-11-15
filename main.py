@@ -8,6 +8,8 @@ import glob, os, pickle
 from keras.layers import Convolution2D, MaxPooling2D
 from numpy import genfromtxt
 from keras import metrics
+from keras.constraints import max_norm
+
 
 alldata = genfromtxt('train.csv', delimiter=',')
 
@@ -23,7 +25,7 @@ print trainY[0]
 def compileMainModel():
     apprater_model = Sequential()
     apprater_model.add(Dense(9, input_dim=9, kernel_initializer='normal', activation='relu'))
-    apprater_model.add(Dense(1, kernel_initializer='normal'))
+    apprater_model.add(Dense(1, kernel_initializer='normal', kernel_constraint=max_norm(5.)))
     apprater_model.compile(loss='mean_squared_error', optimizer='adam')
     apprater_model.summary()
     return apprater_model
