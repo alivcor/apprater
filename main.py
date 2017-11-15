@@ -9,7 +9,7 @@ from keras.layers import Convolution2D, MaxPooling2D
 from numpy import genfromtxt
 from keras import metrics
 from keras.constraints import max_norm
-
+import random
 
 
 def compileMainModel():
@@ -31,48 +31,89 @@ def compileGraphicsModel():
     return graphics_model
 
 
+def save_obj(obj, name):
+    with open('obj/'+ name + '.pkl', 'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+    return True
+
+
 def load_obj(name):
     with open('obj/' + name + '.pkl', 'rb') as f:
         obj = pickle.load(f)
         return obj
 
 
+def randPartition(alldata_X, alldata_gX, alldata_Y, _FRACTION):
+    """
+    alldata_X : All of your X (Features) data
+    alldata_Y : All of your Y (Prediction) data
+    _FRACTION : The fraction of data rows you want for train (0.75 means you need 75% of your data as train and 25% as test)
+    """
+    np.random.seed(0)
+    indices = np.arange(alldata_X.shape[0]-1)
+    np.random.shuffle(indices)
+
+    dataX = alldata_X[indices]
+    gdataX = alldata_gX[indices]
+    dataY = alldata_Y[indices]
+
+    partition_index = int(dataX.shape[0] * _FRACTION)
+
+    trainX = dataX[0:partition_index]
+    gtrainX = gdataX[0:partition_index]
+    testX = dataX[partition_index:dataX.shape[0]]
+    gtestX = gdataX[partition_index:gdataX.shape[0]]
+
+    trainY = dataY[0:partition_index]
+    testY = dataY[partition_index:dataY.shape[0]]
+
+    return [trainX, trainY, testX, testY, gtrainX, gtestX]
+
+
+
 def readCSV():
     alldata = genfromtxt('train.csv', delimiter=',')
-    trainX = alldata[1:81, 1:10]
-    trainY = alldata[1:81, 10]
-    testX = alldata[81:, 1:10]
-    testY = alldata[81:, 10]
-    return trainX, trainY, testX, testY
+    alldataX = alldata[:,1:10]
+    alldataY = alldata[:, 10]
+    # trainX = alldata[1:81, 1:10]
+    # trainY = alldata[1:81, 10]
+    # testX = alldata[81:, 1:10]
+    # testY = alldata[81:, 10]
+    return alldataX, alldataY
 
 
 def loadFeatureVectors():
-    feature_vectors = load_obj("feature_vectors")
+    feature_vectors = load_obj("feature_vectors_complete")
     feature_vectors_array = []
     for x in feature_vectors:
         if type(x) == int:
-            feature_vector = np.zeros((51,4096))
+            feature_vector = np.ones((51,4096))
         else:
             feature_vector = np.squeeze(feature_vectors[x])
         # print feature_vector.shape
         feature_vectors_array.append(feature_vector)
     feature_vectors_array = np.stack(feature_vectors_array, axis=0)
     # print feature_vectors_array.shape
-    return feature_vectors_array[0:80, :, :], feature_vectors_array[80:, :, :]
+    return feature_vectors_array
 
 
+def loadDataset():
+    alldataX, alldataY = readCSV()
+    gdataX = loadFeatureVectors()
+    trainX, trainY, testX, testY, gtrainX, gtestX = randPartition(alldataX, gdataX, alldataY, 0.80)
+    print trainX.shape, trainY.shape, testX.shape, testY.shape, gtrainX.shape, gtestX.shape
+    return trainX, trainY, testX, testY, gtrainX, gtestX
 
-trainX, trainY, testX, testY = readCSV()
 
+trainX, trainY, testX, testY, gtrainX, gtestX = loadDataset()
 
-gtrainX, gtestX = loadFeatureVectors()
-print gtrainX.shape, gtestX.shape
 graphics_model = compileGraphicsModel()
-graphics_model.fit(gtrainX, trainY, batch_size=8, epochs=700)
+graphics_model.fit(gtrainX, trainY, batch_size=100, epochs=700)
 print graphics_model.evaluate(x=gtestX, y=testY)
 
+graphic_model_train_outputs = graphics_model.predict(gtrainX)
 
-#
+save_obj(graphic_model_train_outputs, "graphic_model_train_outputs")
 # apprater_model = compileMainModel()
 #
 # #
