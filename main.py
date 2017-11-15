@@ -8,24 +8,26 @@ import glob, os, pickle
 from keras.layers import Convolution2D, MaxPooling2D
 from numpy import genfromtxt
 from keras import metrics
+from keras import optimizers, regularizers
 from keras.constraints import min_max_norm
 import random
 
 
 def compileMainModel():
     apprater_model = Sequential()
-    apprater_model.add(Dense(9, input_dim=9, kernel_initializer='random_uniform', activation='relu'))
-    apprater_model.add(Dense(9, activation="sigmoid"))
-    apprater_model.add(Dense(1, kernel_initializer='normal', kernel_constraint=min_max_norm(min_value=0.0, max_value=5.0)))
+    apprater_model.add(Dense(10, input_dim=10, kernel_initializer='normal', activation='relu'))
+    apprater_model.add(Dense(10, activation="sigmoid"))
+    # apprater_model.add(Dense(1, kernel_initializer='normal', kernel_constraint=min_max_norm(min_value=0.0, max_value=5.0)))
     apprater_model.compile(loss='mean_squared_error', optimizer='adam')
     apprater_model.summary()
     return apprater_model
 
 def compileGraphicsModel():
     graphics_model = Sequential()
-    graphics_model.add(Dense(9, input_shape=(51,4096), kernel_initializer='random_uniform', bias_initializer='zeros', activation='relu'))
+    graphics_model.add(Dense(9, input_shape=(51,4096), kernel_initializer='random_uniform', bias_initializer='zeros', activation='relu', kernel_regularizer=regularizers.l2(0.01), activity_regularizer=regularizers.l1(0.01)))
     graphics_model.add(Flatten())
-    graphics_model.add(Dense(1, kernel_initializer='normal', kernel_constraint=min_max_norm(min_value=0.0, max_value=5.0)))
+    graphics_model.add(Dense(1, kernel_initializer='normal', kernel_constraint=min_max_norm(min_value=0.0, max_value=5.0), kernel_regularizer=regularizers.l2(0.01), activity_regularizer=regularizers.l1(0.01)))
+    # adam = optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, clipnorm=1.)
     graphics_model.compile(loss='mean_squared_error', optimizer='adam')
     graphics_model.summary()
     return graphics_model
@@ -61,11 +63,14 @@ def randPartition(alldata_X, alldata_gX, alldata_Y, _FRACTION):
 
     trainX = dataX[0:partition_index]
     gtrainX = gdataX[0:partition_index]
-    testX = dataX[partition_index:dataX.shape[0]]
-    gtestX = gdataX[partition_index:gdataX.shape[0]]
+    # testX = dataX[partition_index:dataX.shape[0]]
+    # gtestX = gdataX[partition_index:gdataX.shape[0]]
+    testX = dataX[partition_index:partition_index+150]
+    gtestX = gdataX[partition_index:partition_index+150]
 
     trainY = dataY[0:partition_index]
-    testY = dataY[partition_index:dataY.shape[0]]
+    # testY = dataY[partition_index:dataY.shape[0]]
+    testY = dataY[partition_index:partition_index+150]
 
     return [trainX, trainY, testX, testY, gtrainX, gtestX]
 
@@ -100,30 +105,41 @@ def loadFeatureVectors():
 def loadDataset():
     alldataX, alldataY = readCSV()
     gdataX = loadFeatureVectors()
-    trainX, trainY, testX, testY, gtrainX, gtestX = randPartition(alldataX, gdataX, alldataY, 0.80)
+    trainX, trainY, testX, testY, gtrainX, gtestX = randPartition(alldataX, gdataX, alldataY, 0.50)
     print trainX.shape, trainY.shape, testX.shape, testY.shape, gtrainX.shape, gtestX.shape
     return trainX, trainY, testX, testY, gtrainX, gtestX
 
 
 trainX, trainY, testX, testY, gtrainX, gtestX = loadDataset()
 
-graphics_model = compileGraphicsModel()
-graphics_model.fit(gtrainX, trainY, batch_size=100, epochs=700)
-print graphics_model.evaluate(x=gtestX, y=testY)
-
-graphic_model_train_outputs = graphics_model.predict(gtrainX)
-
-save_obj(graphic_model_train_outputs, "graphic_model_train_outputs")
-# apprater_model = compileMainModel()
+# graphics_model = compileGraphicsModel()
+# graphics_model.fit(gtrainX, trainY, batch_size=12, epochs=200)
+# print graphics_model.evaluate(x=gtestX, y=testY)
 #
+# graphic_model_train_outputs = graphics_model.predict(gtrainX)
+#
+# save_obj(graphic_model_train_outputs, "graphic_model_train_outputs")
+
+graphic_model_train_outputs = load_obj("graphic_model_train_outputs")
+print graphic_model_train_outputs.shape
+#
+trainX = np.hstack((trainX, graphic_model_train_outputs))
+
+print trainX.shape
+# graphic_model_test_outputs = graphics_model.predict(gtestX)
+#
+# testX = np.hstack((trainX, graphic_model_test_outputs))
+
 # #
 # # print trainX.shape, trainY.shape
 # # print trainX[0,:]
 # # print trainY[0]
 # #
 # #
-# apprater_model.fit(trainX, trainY, batch_size=8, epochs=100)
-#
+print trainX
+# apprater_model = compileMainModel()
+# apprater_model.fit(trainX, trainY, batch_size=12, epochs=100)
+# #
 # print apprater_model.evaluate(x=testX, y=testY)
 #
 # print apprater_model.predict(trainX[0,:].reshape(1, -1))
