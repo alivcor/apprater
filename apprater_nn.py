@@ -50,11 +50,13 @@ def compileMainModel():
 
 
 def process_videos(dir_path, features_dict, logfilename):
+    first_app_incl = 1096 # was 101
+    last_app_incl = 1494 # was 1095
     feature_extraction_model = FeatureExtractor.init_load_extractor_model(_LOGFILENAME)
-    for i in range(101, 1096):
+    for i in range(first_app_incl, last_app_incl+1):
         dir_name = dir_path + str(i) + "/"
         files = glob.glob(os.path.join(dir_name, '*.mp4'))
-        EventIssuer.issueMessage("Processing " + str(i) + " of " + str(1095), logfilename)
+        EventIssuer.issueMessage("Processing " + str(i) + " of " + str(last_app_incl-first_app_incl+1), logfilename)
         if(files):
             EventIssuer.issueSuccess("Video files found - extracting features.", logfilename)
             filename = files[0]
@@ -63,11 +65,12 @@ def process_videos(dir_path, features_dict, logfilename):
         else:
             EventIssuer.issueWarning("No videos found, setting FV to 0", logfilename)
             features_dict[i] = 0
-        save_obj(features_dict, "feature_vectors_complete", logfilename)
-        EventIssuer.issueSuccess("Processed " + str(i) + " of " + str(1095), logfilename, True)
+        save_obj(features_dict, "feature_vectors_complete_v2", logfilename)
+        EventIssuer.issueSuccess("Processed " + str(i) + " of " + str(last_app_incl-first_app_incl+1), logfilename, True)
 
 
 start_iresium_core()
-features_dict = load_obj("feature_vectors", _LOGFILENAME)
-process_videos("dataset/clean_dataset/",features_dict, _LOGFILENAME)
+features_dict = load_obj("feature_vectors_complete", _LOGFILENAME)
+process_videos("/clean_dataset/",features_dict, _LOGFILENAME)
+print len(features_dict)
 

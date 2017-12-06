@@ -17,7 +17,7 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn import linear_model
 from sklearn.metrics import mean_squared_error, r2_score
-
+from scipy import stats
 import random
 
 
@@ -128,6 +128,9 @@ def loadDataset():
 
 def plot_hist(x):
     n, bins, patches = plt.hist(x)
+    mu = np.mean(x)
+    sigma = np.std(x)
+    plt.plot(bins, 1 / (sigma * np.sqrt(2 * np.pi)) * np.exp(- (bins - mu) ** 2 / (2 * sigma ** 2)), linewidth = 2, color = 'r')
     plt.show()
     # sys.exit(0)
     pass
@@ -135,7 +138,7 @@ def plot_hist(x):
 
 trainX, trainY, testX, testY, gtrainX, gtestX = loadDataset()
 
-print np.amax(gtrainX[10,:,:].flatten()), np.amin(gtrainX[10,:,:].flatten())
+# print np.amax(gtrainX[10,:,:].flatten()), np.amin(gtrainX[10,:,:].flatten())
 
 
 # # MARK: GRAPHICS MODEL TRAINING
@@ -177,113 +180,125 @@ print "testX.shape", testX.shape
 # print apprater_model.evaluate(x=testX, y=testY)
 # print "\n"
 # print "Predicted Output: ", apprater_model.predict(trainX[0,:].reshape(1, -1))
-#
 
 
-print "\n\nLinear Regression:\n"
-# Create linear regression object
-linear_regr = linear_model.LinearRegression()
-# Train the model using the training sets
-linear_regr.fit(trainX, trainY)
-# Make predictions using the testing set
-pred_y = linear_regr.predict(testX)
-# The coefficients
-# print('Coefficients: \n', regr.coef_)
-# The mean squared error
+
+
+# print "\n\nLinear Regression:\n"
+# # Create linear regression object
+# linear_regr = linear_model.LinearRegression()
+# # Train the model using the training sets
+# linear_regr.fit(trainX, trainY)
+# # Make predictions using the testing set
+# pred_y = linear_regr.predict(testX)
+# # The coefficients
+# # print('Coefficients: \n', regr.coef_)
+# # The mean squared error
+# print("Mean squared error: %.6f"
+#       % mean_squared_error(testY, pred_y))
+# # Explained variance score: 1 is perfect prediction
+# print('Variance score: %.6f' % r2_score(testY, pred_y))
+
+
+
+
+# # linear_regr_stdzd = linear_model.LinearRegression()
+# # linear_regr_stdzd.fit(trainX / np.std(trainX, 0), trainY)
+# # influence_val = linear_regr_stdzd.coef_
+
+
+
+# print "\n\nRidge Regression: \n"
+# ridge_regr = linear_model.Ridge(alpha =.7)
+# # Train the model using the training sets
+# ridge_regr.fit(trainX, trainY)
+# # Make predictions using the testing set
+# pred_y = ridge_regr.predict(testX)
+# # The coefficients
+# # print('Coefficients: \n', regr.coef_)
+# # The mean squared error
+# print("Mean squared error: %.6f"
+#       % mean_squared_error(testY, pred_y))
+# # Explained variance score: 1 is perfect prediction
+# print('Variance score: %.6f' % r2_score(testY, pred_y))
+
+
+
+
+
+# print "\n\nLasso Regression: \n"
+# lasso_regr = linear_model.Lasso(alpha =.1,  max_iter=10000)
+# # Train the model using the training sets
+# lasso_regr.fit(trainX, trainY)
+# # Make predictions using the testing set
+# pred_y = lasso_regr.predict(testX)
+# # The coefficients
+# # print('Coefficients: \n', regr.coef_)
+# # The mean squared error
+# print("Mean squared error: %.6f"
+#       % mean_squared_error(testY, pred_y))
+# # Explained variance score: 1 is perfect prediction
+# print('Variance score: %.6f' % r2_score(testY, pred_y))
+
+
+
+
+
+
+# print "\n\nRandom Forest Regression: \n"
+# rf_regr = RandomForestRegressor(max_depth=2000, random_state=0)
+# rf_regr.fit(trainX, trainY)
+# # print(regr.feature_importances_)
+# # Make predictions using the testing set
+# pred_y = rf_regr.predict(testX)
+# # The coefficients
+# # print('Coefficients: \n', regr.coef_)
+# # The mean squared error
+# print("Mean squared error: %.6f"
+#       % mean_squared_error(testY, pred_y))
+# # Explained variance score: 1 is perfect prediction
+# print('Variance score: %.6f' % r2_score(testY, pred_y))
+
+
+
+
+
+# print "\n\nK Nearest Neighbour Regression: \n"
+# neigh = KNeighborsRegressor(8)
+# neigh.fit(trainX, trainY)
+# # Make predictions using the testing set
+# pred_y = neigh.predict(testX)
+# # The coefficients
+# # print('Coefficients: \n', regr.coef_)
+# # The mean squared error
+# print("Mean squared error: %.6f"
+#       % mean_squared_error(testY, pred_y))
+# # Explained variance score: 1 is perfect prediction
+# print('Variance score: %.6f' % r2_score(testY, pred_y))
+
+
+
+
+
+# print "\n\nElastic Net Regression: \n"
+# elastic_net_regr = ElasticNet(random_state=0)
+# elastic_net_regr.fit(trainX, trainY)
+# # Make predictions using the testing set
+# pred_y = elastic_net_regr.predict(testX)
+# # The coefficients
+# # print('Coefficients: \n', regr.coef_)
+# # The mean squared error
+# print("Mean squared error: %.6f"
+#       % mean_squared_error(testY, pred_y))
+# # Explained variance score: 1 is perfect prediction
+# print('Variance score: %.6f' % r2_score(testY, pred_y))
+
+
+ratings = trainY
+plot_hist(ratings)
+print stats.describe(ratings)
+
+monkey_preds = np.random.normal(3.9822857142857147, 1.2178437397842434, testX.shape[0])
+
 print("Mean squared error: %.6f"
-      % mean_squared_error(testY, pred_y))
-# Explained variance score: 1 is perfect prediction
-print('Variance score: %.6f' % r2_score(testY, pred_y))
-
-
-
-
-# linear_regr_stdzd = linear_model.LinearRegression()
-# linear_regr_stdzd.fit(trainX / np.std(trainX, 0), trainY)
-# influence_val = linear_regr_stdzd.coef_
-
-
-
-print "\n\nRidge Regression: \n"
-ridge_regr = linear_model.Ridge(alpha =.7)
-# Train the model using the training sets
-ridge_regr.fit(trainX, trainY)
-# Make predictions using the testing set
-pred_y = ridge_regr.predict(testX)
-# The coefficients
-# print('Coefficients: \n', regr.coef_)
-# The mean squared error
-print("Mean squared error: %.6f"
-      % mean_squared_error(testY, pred_y))
-# Explained variance score: 1 is perfect prediction
-print('Variance score: %.6f' % r2_score(testY, pred_y))
-
-
-
-
-
-print "\n\nLasso Regression: \n"
-lasso_regr = linear_model.Lasso(alpha =.1,  max_iter=10000)
-# Train the model using the training sets
-lasso_regr.fit(trainX, trainY)
-# Make predictions using the testing set
-pred_y = lasso_regr.predict(testX)
-# The coefficients
-# print('Coefficients: \n', regr.coef_)
-# The mean squared error
-print("Mean squared error: %.6f"
-      % mean_squared_error(testY, pred_y))
-# Explained variance score: 1 is perfect prediction
-print('Variance score: %.6f' % r2_score(testY, pred_y))
-
-
-
-
-
-
-print "\n\nRandom Forest Regression: \n"
-rf_regr = RandomForestRegressor(max_depth=2000, random_state=0)
-rf_regr.fit(trainX, trainY)
-# print(regr.feature_importances_)
-# Make predictions using the testing set
-pred_y = rf_regr.predict(testX)
-# The coefficients
-# print('Coefficients: \n', regr.coef_)
-# The mean squared error
-print("Mean squared error: %.6f"
-      % mean_squared_error(testY, pred_y))
-# Explained variance score: 1 is perfect prediction
-print('Variance score: %.6f' % r2_score(testY, pred_y))
-
-
-
-
-
-print "\n\nK Nearest Neighbour Regression: \n"
-neigh = KNeighborsRegressor(8)
-neigh.fit(trainX, trainY)
-# Make predictions using the testing set
-pred_y = neigh.predict(testX)
-# The coefficients
-# print('Coefficients: \n', regr.coef_)
-# The mean squared error
-print("Mean squared error: %.6f"
-      % mean_squared_error(testY, pred_y))
-# Explained variance score: 1 is perfect prediction
-print('Variance score: %.6f' % r2_score(testY, pred_y))
-
-
-
-
-print "\n\nElastic Net Regression: \n"
-elastic_net_regr = ElasticNet(random_state=0)
-elastic_net_regr.fit(trainX, trainY)
-# Make predictions using the testing set
-pred_y = elastic_net_regr.predict(testX)
-# The coefficients
-# print('Coefficients: \n', regr.coef_)
-# The mean squared error
-print("Mean squared error: %.6f"
-      % mean_squared_error(testY, pred_y))
-# Explained variance score: 1 is perfect prediction
-print('Variance score: %.6f' % r2_score(testY, pred_y))
+      % mean_squared_error(testY, monkey_preds))
