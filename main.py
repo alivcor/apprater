@@ -12,15 +12,22 @@ import matplotlib.pyplot as plt
 from keras import metrics
 from keras import optimizers, regularizers
 from keras.constraints import min_max_norm
+from sklearn.linear_model import ElasticNet
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.ensemble import RandomForestRegressor
+from sklearn import linear_model
+from sklearn.metrics import mean_squared_error, r2_score
+
 import random
 
 
 def compileMainModel():
     apprater_model = Sequential()
-    apprater_model.add(Dense(9, input_dim=9, kernel_initializer='normal', activation='relu'))
-    apprater_model.add(Dense(10, activation="relu"))
-    apprater_model.add(Dense(1, activation="sigmoid", kernel_initializer='normal', kernel_constraint=min_max_norm(min_value=0.0, max_value=5.0)))
-    apprater_model.compile(loss='mean_squared_error', optimizer='adam')
+    apprater_model.add(Dense(10, input_dim=10, kernel_initializer='normal', activation='relu'))
+    apprater_model.add(Dense(8, activation="relu"))
+    apprater_model.add(Dense(1, kernel_initializer='normal', kernel_constraint=min_max_norm(min_value=0.0, max_value=5.0), kernel_regularizer=regularizers.l2(0.01), activity_regularizer=regularizers.l1(0.01)))
+    adam = optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+    apprater_model.compile(loss='mean_squared_error', optimizer=adam)
     apprater_model.summary()
     return apprater_model
 
@@ -79,7 +86,7 @@ def randPartition(alldata_X, alldata_gX, alldata_Y, _FRACTION):
 
 
 def readCSV():
-    alldata = genfromtxt('train.csv', delimiter=',')
+    alldata = genfromtxt('train_v2.csv', delimiter=',')
     alldataX = alldata[1:,1:10]
     alldataY = alldata[1:, 10]
     # trainX = alldata[1:81, 1:10]
@@ -133,37 +140,150 @@ print np.amax(gtrainX[10,:,:].flatten()), np.amin(gtrainX[10,:,:].flatten())
 
 # # MARK: GRAPHICS MODEL TRAINING
 # graphics_model = compileGraphicsModel()
-# graphics_model.fit(gtrainX, trainY, batch_size=12, epochs=2)
+# graphics_model.fit(gtrainX, trainY, batch_size=12, epochs=120)
 # graphics_model.save("obj/trained_graphic_model.h5")
-#
+
+
 # # MARK: LOAD GRAPHICS MODEL
-# graphics_model = load_model("obj/trained_graphic_model.h5")
-# print "graphics_model.evaluate(x=gtestX, y=testY)", graphics_model.evaluate(x=gtestX, y=testY)
-# graphic_model_train_outputs = graphics_model.predict(gtrainX)
-# save_obj(graphic_model_train_outputs, "graphic_model_train_outputs")
-#
+graphics_model = load_model("obj/trained_graphic_model.h5")
+print "graphics_model.evaluate(x=gtestX, y=testY)", graphics_model.evaluate(x=gtestX, y=testY)
+graphic_model_train_outputs = graphics_model.predict(gtrainX)
+save_obj(graphic_model_train_outputs, "graphic_model_train_outputs")
+print "Evaulation: "
+print graphics_model.evaluate(x=gtestX, y=testY)
+
+
 # # MARK: GRAPHICS MODEL OUTPUT LOADING
-# graphic_model_train_outputs = load_obj("graphic_model_train_outputs") #t
-# print "graphic_model_train_outputs.shape", graphic_model_train_outputs.shape #t
-#
+graphic_model_train_outputs = load_obj("graphic_model_train_outputs") #t
+print "graphic_model_train_outputs.shape", graphic_model_train_outputs.shape #t
+
+
 # # MARK: APPEND GRAPHICS MODEL OUTPUT WITH TRAIN.CSV INPUT
-# trainX = np.hstack((trainX, graphic_model_train_outputs)) #t
-# print "trainX.shape", trainX.shape  #t
-#
+trainX = np.hstack((trainX, graphic_model_train_outputs)) #t
+print "trainX.shape", trainX.shape  #t
+
+
 # # MARK: DO SAME FOR TEST
-# graphic_model_test_outputs = graphics_model.predict(gtestX)
-# testX = np.hstack((testX, graphic_model_test_outputs))
-# print "testX.shape", testX.shape
+graphic_model_test_outputs = graphics_model.predict(gtestX)
+testX = np.hstack((testX, graphic_model_test_outputs))
+print "testX.shape", testX.shape
 
 
-# # print trainX.shape, trainY.shape
-# # print trainX[0,:]
-# # print trainY[0]
-
-# print trainX
-apprater_model = compileMainModel()
-apprater_model.fit(trainX, trainY, batch_size=12, epochs=100)
+# # MARK: TRAIN MAIN MODEL
+# apprater_model = compileMainModel()
+# apprater_model.fit(trainX, trainY, batch_size=32, epochs=1000)
+# apprater_model.save("obj/apprater_model.h5")
+# print "Evaulation: "
+# print apprater_model.evaluate(x=testX, y=testY)
+# print "\n"
+# print "Predicted Output: ", apprater_model.predict(trainX[0,:].reshape(1, -1))
 #
-print apprater_model.evaluate(x=testX, y=testY)
 
-print apprater_model.predict(trainX[0,:].reshape(1, -1))
+
+print "\n\nLinear Regression:\n"
+# Create linear regression object
+linear_regr = linear_model.LinearRegression()
+# Train the model using the training sets
+linear_regr.fit(trainX, trainY)
+# Make predictions using the testing set
+pred_y = linear_regr.predict(testX)
+# The coefficients
+# print('Coefficients: \n', regr.coef_)
+# The mean squared error
+print("Mean squared error: %.6f"
+      % mean_squared_error(testY, pred_y))
+# Explained variance score: 1 is perfect prediction
+print('Variance score: %.6f' % r2_score(testY, pred_y))
+
+
+
+
+# linear_regr_stdzd = linear_model.LinearRegression()
+# linear_regr_stdzd.fit(trainX / np.std(trainX, 0), trainY)
+# influence_val = linear_regr_stdzd.coef_
+
+
+
+print "\n\nRidge Regression: \n"
+ridge_regr = linear_model.Ridge(alpha =.7)
+# Train the model using the training sets
+ridge_regr.fit(trainX, trainY)
+# Make predictions using the testing set
+pred_y = ridge_regr.predict(testX)
+# The coefficients
+# print('Coefficients: \n', regr.coef_)
+# The mean squared error
+print("Mean squared error: %.6f"
+      % mean_squared_error(testY, pred_y))
+# Explained variance score: 1 is perfect prediction
+print('Variance score: %.6f' % r2_score(testY, pred_y))
+
+
+
+
+
+print "\n\nLasso Regression: \n"
+lasso_regr = linear_model.Lasso(alpha =.1,  max_iter=10000)
+# Train the model using the training sets
+lasso_regr.fit(trainX, trainY)
+# Make predictions using the testing set
+pred_y = lasso_regr.predict(testX)
+# The coefficients
+# print('Coefficients: \n', regr.coef_)
+# The mean squared error
+print("Mean squared error: %.6f"
+      % mean_squared_error(testY, pred_y))
+# Explained variance score: 1 is perfect prediction
+print('Variance score: %.6f' % r2_score(testY, pred_y))
+
+
+
+
+
+
+print "\n\nRandom Forest Regression: \n"
+rf_regr = RandomForestRegressor(max_depth=2000, random_state=0)
+rf_regr.fit(trainX, trainY)
+# print(regr.feature_importances_)
+# Make predictions using the testing set
+pred_y = rf_regr.predict(testX)
+# The coefficients
+# print('Coefficients: \n', regr.coef_)
+# The mean squared error
+print("Mean squared error: %.6f"
+      % mean_squared_error(testY, pred_y))
+# Explained variance score: 1 is perfect prediction
+print('Variance score: %.6f' % r2_score(testY, pred_y))
+
+
+
+
+
+print "\n\nK Nearest Neighbour Regression: \n"
+neigh = KNeighborsRegressor(8)
+neigh.fit(trainX, trainY)
+# Make predictions using the testing set
+pred_y = neigh.predict(testX)
+# The coefficients
+# print('Coefficients: \n', regr.coef_)
+# The mean squared error
+print("Mean squared error: %.6f"
+      % mean_squared_error(testY, pred_y))
+# Explained variance score: 1 is perfect prediction
+print('Variance score: %.6f' % r2_score(testY, pred_y))
+
+
+
+
+print "\n\nElastic Net Regression: \n"
+elastic_net_regr = ElasticNet(random_state=0)
+elastic_net_regr.fit(trainX, trainY)
+# Make predictions using the testing set
+pred_y = elastic_net_regr.predict(testX)
+# The coefficients
+# print('Coefficients: \n', regr.coef_)
+# The mean squared error
+print("Mean squared error: %.6f"
+      % mean_squared_error(testY, pred_y))
+# Explained variance score: 1 is perfect prediction
+print('Variance score: %.6f' % r2_score(testY, pred_y))
