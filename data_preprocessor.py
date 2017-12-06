@@ -22,7 +22,7 @@ f.write('hasVideo' + ',')
 f.write('score')
 f.write('\n')
 
-count = 600
+count = 1095
 with progressbar.ProgressBar(max_value=Constants.Max_Number_Of_Apps) as progress:
     while count < Constants.Max_Number_Of_Apps:
         count = count + 1
