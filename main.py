@@ -35,9 +35,10 @@ def compileGraphicsModel():
     graphics_model = Sequential()
     graphics_model.add(Dense(9, input_shape=(51,4096), kernel_initializer='random_uniform', bias_initializer='zeros', activation='relu', kernel_regularizer=regularizers.l2(0.01), activity_regularizer=regularizers.l1(0.01)))
     graphics_model.add(Flatten())
+    graphics_model.add(Dense(8, activation="relu"))
     graphics_model.add(Dense(1, kernel_initializer='normal', kernel_constraint=min_max_norm(min_value=0.0, max_value=5.0), kernel_regularizer=regularizers.l2(0.01), activity_regularizer=regularizers.l1(0.01)))
-    # adam = optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, clipnorm=1.)
-    graphics_model.compile(loss='mean_squared_error', optimizer='adam')
+    adam = optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+    graphics_model.compile(loss='mean_squared_error', optimizer=adam)
     graphics_model.summary()
     return graphics_model
 
@@ -61,8 +62,16 @@ def randPartition(alldata_X, alldata_gX, alldata_Y, _FRACTION):
     _FRACTION : The fraction of data rows you want for train (0.75 means you need 75% of your data as train and 25% as test)
     """
     np.random.seed(0)
-    indices = np.arange(alldata_X.shape[0]-1)
-    # np.random.shuffle(indices)
+    filtered_indices = []
+    cnt = 0
+    for x in alldata_Y:
+        if x != 0:
+            filtered_indices.append(cnt)
+        cnt+=1
+    # indices = np.arange(alldata_X.shape[0]-1)
+    indices = filtered_indices
+    print "Number of data points filtered: ", len(indices)
+    np.random.shuffle(indices)
 
     dataX = alldata_X[indices]
     gdataX = alldata_gX[indices]
@@ -97,7 +106,7 @@ def readCSV():
 
 
 def loadFeatureVectors():
-    feature_vectors = load_obj("feature_vectors_complete")
+    feature_vectors = load_obj("feature_vectors_complete_v2")
     feature_vectors_array = []
     fint = 0
     for x in feature_vectors:
@@ -140,21 +149,45 @@ def analyze_data(trainY, testY):
     ratings = trainY
     plot_hist(ratings)
     print stats.describe(ratings)
-    monkey_preds = np.random.normal(3.9822857142857147, 1.2178437397842434, testX.shape[0])
+    monkey_preds = np.random.normal(np.mean(trainY), np.std(trainY), testX.shape[0])
     print("Mean squared error: %.6f"
           % mean_squared_error(testY, monkey_preds))
+    print('Variance score: %.6f' % r2_score(testY, monkey_preds))
     pass
 
 
+def bin_count(trainY):
+    bin1 = 0
+    bin2 = 0
+    bin3 = 0
+    bin4 = 0
+    bin5 = 0
+    for x in trainY:
+        if x < 1:
+            bin1 += 1
+        elif x >= 1 and x < 2:
+            bin2 += 1
+        elif x >= 2 and x < 3:
+            bin3 += 1
+        elif x >= 3 and x < 4:
+            bin4 += 1
+        else:
+            bin5 += 1
+    print bin1, bin2, bin3, bin4, bin5
 
 trainX, trainY, testX, testY, gtrainX, gtestX = loadDataset()
 
-# print np.amax(gtrainX[10,:,:].flatten()), np.amin(gtrainX[10,:,:].flatten())
+textual_only = False
+trivial_only = False
+
+analyze_data(trainY, testY)
+
+print np.amax(gtrainX[10,:,:].flatten()), np.amin(gtrainX[10,:,:].flatten())
 
 
 # # MARK: GRAPHICS MODEL TRAINING
 graphics_model = compileGraphicsModel()
-graphics_model.fit(gtrainX, trainY, batch_size=12, epochs=120)
+graphics_model.fit(gtrainX, trainY, batch_size=12, epochs=250)
 graphics_model.save("obj/trained_graphic_model.h5")
 
 
@@ -165,6 +198,7 @@ graphic_model_train_outputs = graphics_model.predict(gtrainX)
 save_obj(graphic_model_train_outputs, "graphic_model_train_outputs")
 print "Evaulation: "
 print graphics_model.evaluate(x=gtestX, y=testY)
+
 
 
 # # MARK: GRAPHICS MODEL OUTPUT LOADING
@@ -288,11 +322,30 @@ print("Mean squared error: %.6f"
 print('Variance score: %.6f' % r2_score(testY, pred_y))
 
 
+#
+#
+if textual_only:
+    trainX = trainX[:,7]
+    testX = testX[:,7]
+    print trainX[7]
+    trainX2 = []
+    testX2 = []
 
+    for x in trainX:
+        trainX2.append([x])
+    trainX = np.array(trainX2)
 
+    for x in testX:
+        testX2.append([x])
+    testX = np.array(testX2)
 
+if trivial_only:
+    trainX = np.delete(trainX, 7, 1)
+    testX = np.delete(testX, 7, 1)
+
+print trainX.shape
 print "\n\nElastic Net Regression: \n"
-elastic_net_regr = ElasticNet(random_state=0)
+elastic_net_regr = ElasticNet(random_state=2)
 elastic_net_regr.fit(trainX, trainY)
 # Make predictions using the testing set
 pred_y = elastic_net_regr.predict(testX)

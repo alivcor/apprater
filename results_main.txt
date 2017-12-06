@@ -1,0 +1,49 @@
+
+Neural Network:
+
+ 32/264 [==>...........................] - ETA: 0s1.51789005597
+
+
+Linear Regression:
+
+/Users/abhinandandubey/.virtualenvs/cv/lib/python2.7/site-packages/scipy/linalg/basic.py:1018: RuntimeWarning: internal gelsd driver lwork query error, required iwork dimension not returned. This is likely the result of LAPACK bug 0038, fixed in LAPACK 3.2.2 (released July 21, 2010). Falling back to 'gelss' driver.
+  warnings.warn(mesg, RuntimeWarning)
+Mean squared error: 0.982479
+Variance score: -2.144304
+
+
+Ridge Regression:
+
+Mean squared error: 0.919594
+Variance score: -1.943048
+
+
+Lasso Regression:
+
+Mean squared error: 0.306594
+Variance score: 0.018785
+
+
+Random Forest Regression:
+
+Mean squared error: 0.328673
+Variance score: -0.051876
+
+
+K Nearest Neighbour Regression:
+
+Mean squared error: 0.289733
+Variance score: 0.072745
+
+
+Elastic Net Regression:
+
+Mean squared error: 0.313235
+Variance score: -0.002470
+
+DescribeResult(nobs=875, minmax=(0.0, 5.0), mean=3.9822857142857147, variance=1.2178437397842434,
+skewness=-2.9102894023838077, kurtosis=7.725047185216663)
+Mean squared error: 1.692493
+
+
+s
