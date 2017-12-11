@@ -12,7 +12,7 @@ Application ratings are usually based on user reviews. However, this system has 
 We build scripts to compile the dataset from Google App Store.
 Lets create a list of applications.
 
-# Target Samples : 1494
+### Target Samples : 1494
 
 **Games**
 
