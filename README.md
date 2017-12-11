@@ -6,9 +6,7 @@
 
 ## What is this project about
 Application ratings are usually based on user reviews. However, this system has an inherent bias towards applications which have been downloaded and rated by the users. A key challenge is to determine how good an app or game is, based on its gameplay videos, screenshots, application description, and other trivial features. In this exploratory study, we have compiled first of its kind, comprehensive dataset, but have also built predictive learning models which can mimic the human process of likability of a particular application or a game, based on visual and textual cues
-<p align="center">
-<img src="https://scontent-lga3-1.xx.fbcdn.net/v/t1.0-9/17523715_1854956714753291_7113673353363182406_n.png?oh=4ce9602bba2cbbb959842f5e136a42b3&oe=59954BC3" alt="Climate Change" width="200" height="200" style="display: block; margin: 0 auto;" align="middle"/>
-</p>
+
 
 ## Datasets
 We build scripts to compile the dataset from Google App Store.
